@@ -2,10 +2,18 @@ import { ethers } from 'ethers';
 import type {
   Block,
   BlockWithTransactions,
+  ComputeInfo,
   EpochInfo,
+  InferenceModel,
+  InferenceProofResult,
+  InferenceProofSubmission,
+  InferenceStats,
+  InferenceTask,
+  InferenceTaskRequest,
   NetworkConfig,
   NetworkStats,
   NodeInfo,
+  PublicTaskResult,
   Validator,
   ValidatorSummary,
 } from '../types';
@@ -198,6 +206,97 @@ export class QfcProvider extends ethers.JsonRpcProvider {
       epoch: BigInt(result.epoch),
       validators: this._parseValidatorList(result.validators),
       totalStake: BigInt(result.totalStake),
+    };
+  }
+
+  // ========== v2.0 AI Inference Methods ==========
+
+  async getInferenceStats(): Promise<InferenceStats> {
+    const result = await this.send('qfc_getInferenceStats', []);
+    return {
+      tasksCompleted: BigInt(result.tasksCompleted),
+      avgTimeMs: Number(result.avgTimeMs),
+      flopsTotal: BigInt(result.flopsTotal),
+      passRate: Number(result.passRate),
+    };
+  }
+
+  async getComputeInfo(): Promise<ComputeInfo> {
+    const result = await this.send('qfc_getComputeInfo', []);
+    return {
+      backend: String(result.backend),
+      supportedModels: result.supportedModels || [],
+      gpuMemoryMb: Number(result.gpuMemoryMb),
+      inferenceScore: BigInt(result.inferenceScore || '0'),
+      gpuTier: String(result.gpuTier),
+      providesCompute: Boolean(result.providesCompute),
+    };
+  }
+
+  async getSupportedModels(): Promise<InferenceModel[]> {
+    const result = await this.send('qfc_getSupportedModels', []);
+    if (!Array.isArray(result)) return [];
+    return result.map((m: Record<string, unknown>) => ({
+      name: String(m.name),
+      version: String(m.version),
+      minMemoryMb: Number(m.minMemoryMb),
+      minTier: String(m.minTier),
+      approved: Boolean(m.approved),
+    }));
+  }
+
+  async getInferenceTask(request: InferenceTaskRequest): Promise<InferenceTask | null> {
+    const result = await this.send('qfc_getInferenceTask', [request]);
+    if (!result) return null;
+    return {
+      taskId: String(result.taskId),
+      epoch: BigInt(result.epoch),
+      taskType: String(result.taskType),
+      modelName: String(result.modelName),
+      modelVersion: String(result.modelVersion),
+      inputData: String(result.inputData),
+      deadline: BigInt(result.deadline),
+    };
+  }
+
+  async submitInferenceProof(submission: InferenceProofSubmission): Promise<InferenceProofResult> {
+    const payload = {
+      minerAddress: submission.minerAddress,
+      taskId: submission.taskId,
+      epoch: submission.epoch.toString(),
+      outputHash: submission.outputHash,
+      executionTimeMs: submission.executionTimeMs,
+      flopsEstimated: submission.flopsEstimated.toString(),
+      backend: submission.backend,
+      proofBytes: submission.proofBytes,
+    };
+    const result = await this.send('qfc_submitInferenceProof', [payload]);
+    return {
+      accepted: Boolean(result.accepted),
+      spotChecked: Boolean(result.spotChecked),
+      message: String(result.message),
+    };
+  }
+
+  async submitPublicTask(params: {
+    taskType: string;
+    modelId: string;
+    inputData: string;
+    maxFee: string;
+  }): Promise<string> {
+    const result = await this.send('qfc_submitPublicTask', [params]);
+    return String(result);
+  }
+
+  async getPublicTaskStatus(taskId: string): Promise<PublicTaskResult> {
+    const result = await this.send('qfc_getPublicTaskStatus', [taskId]);
+    return {
+      taskId: String(result.taskId),
+      status: String(result.status),
+      resultData: result.resultData ? String(result.resultData) : undefined,
+      minerAddress: result.minerAddress ? String(result.minerAddress) : undefined,
+      executionTimeMs: result.executionTimeMs != null ? Number(result.executionTimeMs) : undefined,
+      fee: result.fee != null ? BigInt(result.fee) : undefined,
     };
   }
 
