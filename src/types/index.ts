@@ -93,4 +93,5 @@ export type {
   InferenceProofSubmission,
   InferenceProofResult,
   PublicTaskResult,
+  SubmitInferenceRequest,
 } from './inference';

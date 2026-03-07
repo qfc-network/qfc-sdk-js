@@ -67,12 +67,30 @@ export interface InferenceProofResult {
   message: string;
 }
 
-/** Public inference task result */
+/** Public inference task status (B1: structured result envelope) */
 export interface PublicTaskResult {
   taskId: string;
-  status: string;
-  resultData?: string;
+  status: 'Pending' | 'Assigned' | 'Completed' | 'Failed' | 'Expired';
+  submitter: string;
+  taskType: string;
+  modelId: string;
+  createdAt: number;
+  deadline: number;
+  maxFee: string;
+  /** Base64-encoded result bytes (present when status=Completed) */
+  result?: string;
+  /** Result size in bytes */
+  resultSize?: number;
   minerAddress?: string;
   executionTimeMs?: number;
-  fee?: bigint;
+}
+
+/** Request to submit a public inference task */
+export interface SubmitInferenceRequest {
+  taskType: string;
+  modelId: string;
+  inputData: string;
+  maxFee: string;
+  submitter: string;
+  signature: string;
 }

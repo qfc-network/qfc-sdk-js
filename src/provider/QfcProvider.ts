@@ -283,6 +283,8 @@ export class QfcProvider extends ethers.JsonRpcProvider {
     modelId: string;
     inputData: string;
     maxFee: string;
+    submitter: string;
+    signature: string;
   }): Promise<string> {
     const result = await this.send('qfc_submitPublicTask', [params]);
     return String(result);
@@ -290,14 +292,33 @@ export class QfcProvider extends ethers.JsonRpcProvider {
 
   async getPublicTaskStatus(taskId: string): Promise<PublicTaskResult> {
     const result = await this.send('qfc_getPublicTaskStatus', [taskId]);
-    return {
-      taskId: String(result.taskId),
-      status: String(result.status),
-      resultData: result.resultData ? String(result.resultData) : undefined,
-      minerAddress: result.minerAddress ? String(result.minerAddress) : undefined,
-      executionTimeMs: result.executionTimeMs != null ? Number(result.executionTimeMs) : undefined,
-      fee: result.fee != null ? BigInt(result.fee) : undefined,
-    };
+    return this._parseTaskStatus(result);
+  }
+
+  /**
+   * Wait for an inference task to reach a terminal state.
+   * Polls getPublicTaskStatus every `intervalMs` until Completed/Failed/Expired or timeout.
+   *
+   * @param taskId - Task ID (hex)
+   * @param timeoutMs - Maximum wait time in ms (default: 120000)
+   * @param intervalMs - Poll interval in ms (default: 1000)
+   * @returns Final task status
+   */
+  async waitForInferenceResult(
+    taskId: string,
+    timeoutMs: number = 120000,
+    intervalMs: number = 1000,
+  ): Promise<PublicTaskResult> {
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+      const status = await this.getPublicTaskStatus(taskId);
+      if (status.status === 'Completed' || status.status === 'Failed' || status.status === 'Expired') {
+        return status;
+      }
+      await new Promise((r) => setTimeout(r, intervalMs));
+    }
+    // One final check
+    return this.getPublicTaskStatus(taskId);
   }
 
   // ========== Enhanced Standard Methods ==========
@@ -416,6 +437,23 @@ export class QfcProvider extends ethers.JsonRpcProvider {
       moniker: data.moniker ? String(data.moniker) : undefined,
       website: data.website ? String(data.website) : undefined,
       description: data.description ? String(data.description) : undefined,
+    };
+  }
+
+  private _parseTaskStatus(result: Record<string, unknown>): PublicTaskResult {
+    return {
+      taskId: String(result.taskId),
+      status: String(result.status) as PublicTaskResult['status'],
+      submitter: String(result.submitter || ''),
+      taskType: String(result.taskType || ''),
+      modelId: String(result.modelId || ''),
+      createdAt: Number(result.createdAt || 0),
+      deadline: Number(result.deadline || 0),
+      maxFee: String(result.maxFee || '0x0'),
+      result: result.result ? String(result.result) : undefined,
+      resultSize: result.resultSize != null ? Number(result.resultSize) : undefined,
+      minerAddress: result.minerAddress ? String(result.minerAddress) : undefined,
+      executionTimeMs: result.executionTimeMs != null ? Number(result.executionTimeMs) : undefined,
     };
   }
 

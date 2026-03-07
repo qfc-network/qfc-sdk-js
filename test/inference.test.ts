@@ -54,10 +54,16 @@ describe('Inference Methods', () => {
           return {
             taskId: params[0],
             status: 'Completed',
-            resultData: '0xresultdata',
+            submitter: '0x' + '2'.repeat(40),
+            taskType: 'embedding',
+            modelId: 'qfc-embed-small:v1.0',
+            createdAt: 1704153500000,
+            deadline: 1704153560000,
+            maxFee: '0x38d7ea4c68000',
+            result: 'SGVsbG8gV29ybGQ=',
+            resultSize: 11,
             minerAddress: '0x' + '1'.repeat(40),
             executionTimeMs: 120,
-            fee: '1000000000000000',
           };
         default:
           throw new Error(`Unknown method: ${method}`);
@@ -146,24 +152,26 @@ describe('Inference Methods', () => {
         modelId: 'qfc-embed-small',
         inputData: '0xdeadbeef',
         maxFee: '1000000000000000',
+        submitter: '0x' + '2'.repeat(40),
+        signature: '0x' + 'ab'.repeat(64),
       });
       expect(taskId).toBe('0x' + 'cd'.repeat(32));
-      expect(sendSpy).toHaveBeenCalledWith('qfc_submitPublicTask', [
-        { taskType: 'embedding', modelId: 'qfc-embed-small', inputData: '0xdeadbeef', maxFee: '1000000000000000' },
-      ]);
     });
   });
 
   describe('getPublicTaskStatus', () => {
-    it('should return task status', async () => {
+    it('should return structured task status', async () => {
       const taskId = '0x' + 'cd'.repeat(32);
       const result = await provider.getPublicTaskStatus(taskId);
       expect(result.taskId).toBe(taskId);
       expect(result.status).toBe('Completed');
-      expect(result.resultData).toBe('0xresultdata');
+      expect(result.submitter).toBe('0x' + '2'.repeat(40));
+      expect(result.taskType).toBe('embedding');
+      expect(result.modelId).toBe('qfc-embed-small:v1.0');
+      expect(result.result).toBe('SGVsbG8gV29ybGQ=');
+      expect(result.resultSize).toBe(11);
       expect(result.minerAddress).toBe('0x' + '1'.repeat(40));
       expect(result.executionTimeMs).toBe(120);
-      expect(result.fee).toBe(1000000000000000n);
       expect(sendSpy).toHaveBeenCalledWith('qfc_getPublicTaskStatus', [taskId]);
     });
   });
