@@ -82,3 +82,16 @@ export type {
   TraceOptions,
   TraceResult,
 } from './rpc';
+
+// Inference types (v2.0)
+export type {
+  InferenceModel,
+  InferenceStats,
+  ComputeInfo,
+  InferenceTask,
+  InferenceTaskRequest,
+  InferenceProofSubmission,
+  InferenceProofResult,
+  PublicTaskResult,
+  SubmitInferenceRequest,
+} from './inference';
