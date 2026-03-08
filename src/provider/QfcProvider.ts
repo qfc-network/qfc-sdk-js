@@ -6,6 +6,7 @@ import type {
   NetworkConfig,
   NetworkStats,
   NodeInfo,
+  PublicTaskStatus,
   Validator,
   ValidatorSummary,
 } from '../types';
@@ -199,6 +200,31 @@ export class QfcProvider extends ethers.JsonRpcProvider {
       validators: this._parseValidatorList(result.validators),
       totalStake: BigInt(result.totalStake),
     };
+  }
+
+  // ========== Inference Methods ==========
+
+  /**
+   * Get the status of a public inference task
+   *
+   * @param taskId - Task identifier (hex)
+   * @returns Task status including result location info
+   */
+  async getPublicTaskStatus(taskId: string): Promise<PublicTaskStatus> {
+    return this.send('qfc_getPublicTaskStatus', [taskId]);
+  }
+
+  /**
+   * Fetch a full inference result stored on IPFS.
+   *
+   * The node proxies the request through its IPFS gateway and returns
+   * the base64-encoded content.
+   *
+   * @param cid - IPFS content identifier (e.g. "QmXYZ...")
+   * @returns Base64-encoded result payload
+   */
+  async getInferenceResult(cid: string): Promise<string> {
+    return this.send('qfc_getInferenceResult', [cid]);
   }
 
   // ========== Enhanced Standard Methods ==========

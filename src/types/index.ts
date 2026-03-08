@@ -67,6 +67,16 @@ export type {
   NodeInfo,
 } from './network';
 
+// Inference types
+export type {
+  InferenceResultType,
+  PublicTaskStatus,
+  InferenceModel,
+  InferenceFeeEstimate,
+  DecodedInferenceResult,
+  InferenceStats,
+} from './inference';
+
 // RPC types
 export { JSON_RPC_ERRORS, PROVIDER_ERRORS } from './rpc';
 
