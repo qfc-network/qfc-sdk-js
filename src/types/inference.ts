@@ -2,6 +2,9 @@
  * QFC v2.0 AI Inference Types
  */
 
+/** How the result is stored */
+export type InferenceResultType = 'inline' | 'ipfs';
+
 /** Approved model in the registry */
 export interface InferenceModel {
   name: string;
@@ -13,9 +16,9 @@ export interface InferenceModel {
 
 /** Network-wide inference statistics */
 export interface InferenceStats {
-  tasksCompleted: bigint;
+  tasksCompleted: number;
   avgTimeMs: number;
-  flopsTotal: bigint;
+  flopsTotal: string;
   passRate: number;
 }
 
@@ -67,8 +70,8 @@ export interface InferenceProofResult {
   message: string;
 }
 
-/** Public inference task status (B1: structured result envelope) */
-export interface PublicTaskResult {
+/** Public inference task status */
+export interface PublicTaskStatus {
   taskId: string;
   status: 'Pending' | 'Assigned' | 'Completed' | 'Failed' | 'Expired';
   submitter: string;
@@ -77,13 +80,17 @@ export interface PublicTaskResult {
   createdAt: number;
   deadline: number;
   maxFee: string;
-  /** Base64-encoded result bytes (present when status=Completed) */
+  resultType?: InferenceResultType;
   result?: string;
-  /** Result size in bytes */
+  resultCid?: string;
+  resultPreview?: string;
   resultSize?: number;
   minerAddress?: string;
   executionTimeMs?: number;
 }
+
+/** Alias for backward compat */
+export type PublicTaskResult = PublicTaskStatus;
 
 /** Request to submit a public inference task */
 export interface SubmitInferenceRequest {
@@ -93,4 +100,25 @@ export interface SubmitInferenceRequest {
   maxFee: string;
   submitter: string;
   signature: string;
+}
+
+/** Fee estimate for an inference task */
+export interface InferenceFeeEstimate {
+  baseFee: string;
+  model: string;
+  gpuTier: string;
+  estimatedTimeMs: number;
+}
+
+/** Decoded inference result envelope */
+export interface DecodedInferenceResult {
+  model: string;
+  submitter: string;
+  miner: string;
+  output: unknown;
+  executionTimeMs: number;
+  timestamps: {
+    submitted: number;
+    completed: number;
+  };
 }

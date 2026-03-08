@@ -214,9 +214,9 @@ export class QfcProvider extends ethers.JsonRpcProvider {
   async getInferenceStats(): Promise<InferenceStats> {
     const result = await this.send('qfc_getInferenceStats', []);
     return {
-      tasksCompleted: BigInt(result.tasksCompleted),
+      tasksCompleted: Number(result.tasksCompleted),
       avgTimeMs: Number(result.avgTimeMs),
-      flopsTotal: BigInt(result.flopsTotal),
+      flopsTotal: String(result.flopsTotal),
       passRate: Number(result.passRate),
     };
   }
@@ -319,6 +319,16 @@ export class QfcProvider extends ethers.JsonRpcProvider {
     }
     // One final check
     return this.getPublicTaskStatus(taskId);
+  }
+
+  /**
+   * Fetch a full inference result stored on IPFS.
+   *
+   * @param cid - IPFS content identifier (e.g. "QmXYZ...")
+   * @returns Base64-encoded result payload
+   */
+  async getInferenceResult(cid: string): Promise<string> {
+    return this.send('qfc_getInferenceResult', [cid]);
   }
 
   // ========== Enhanced Standard Methods ==========

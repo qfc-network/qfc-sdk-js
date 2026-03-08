@@ -67,6 +67,23 @@ export type {
   NodeInfo,
 } from './network';
 
+// Inference types (v2.0)
+export type {
+  InferenceResultType,
+  InferenceModel,
+  InferenceStats,
+  ComputeInfo,
+  InferenceTask,
+  InferenceTaskRequest,
+  InferenceProofSubmission,
+  InferenceProofResult,
+  PublicTaskStatus,
+  PublicTaskResult,
+  SubmitInferenceRequest,
+  InferenceFeeEstimate,
+  DecodedInferenceResult,
+} from './inference';
+
 // RPC types
 export { JSON_RPC_ERRORS, PROVIDER_ERRORS } from './rpc';
 
@@ -82,16 +99,3 @@ export type {
   TraceOptions,
   TraceResult,
 } from './rpc';
-
-// Inference types (v2.0)
-export type {
-  InferenceModel,
-  InferenceStats,
-  ComputeInfo,
-  InferenceTask,
-  InferenceTaskRequest,
-  InferenceProofSubmission,
-  InferenceProofResult,
-  PublicTaskResult,
-  SubmitInferenceRequest,
-} from './inference';
