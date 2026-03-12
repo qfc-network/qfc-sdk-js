@@ -82,6 +82,7 @@ export type {
   SubmitInferenceRequest,
   InferenceFeeEstimate,
   DecodedInferenceResult,
+  TaskListFilter,
 } from './inference';
 
 // RPC types

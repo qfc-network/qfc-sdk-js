@@ -44,6 +44,10 @@ export { QfcWallet, createWallet } from './wallet';
 // ========== Staking ==========
 export { StakingClient, createStakingClient } from './staking';
 
+// ========== Inference ==========
+export { InferenceClient, createInferenceClient } from './inference';
+export type { SubmitTaskParams } from './inference';
+
 // ========== Contract ==========
 export {
   getERC20,

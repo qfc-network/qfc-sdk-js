@@ -110,6 +110,14 @@ export interface InferenceFeeEstimate {
   estimatedTimeMs: number;
 }
 
+/** Filter for listing public tasks */
+export interface TaskListFilter {
+  submitter?: string;
+  status?: PublicTaskStatus['status'];
+  limit?: number;
+  offset?: number;
+}
+
 /** Decoded inference result envelope */
 export interface DecodedInferenceResult {
   model: string;

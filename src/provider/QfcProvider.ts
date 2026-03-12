@@ -4,6 +4,7 @@ import type {
   BlockWithTransactions,
   ComputeInfo,
   EpochInfo,
+  InferenceFeeEstimate,
   InferenceModel,
   InferenceProofResult,
   InferenceProofSubmission,
@@ -14,6 +15,7 @@ import type {
   NetworkStats,
   NodeInfo,
   PublicTaskResult,
+  TaskListFilter,
   Validator,
   ValidatorSummary,
 } from '../types';
@@ -288,6 +290,28 @@ export class QfcProvider extends ethers.JsonRpcProvider {
   }): Promise<string> {
     const result = await this.send('qfc_submitPublicTask', [params]);
     return String(result);
+  }
+
+  async listPublicTasks(filter?: TaskListFilter): Promise<PublicTaskResult[]> {
+    const result = await this.send('qfc_listPublicTasks', [filter || {}]);
+    if (!Array.isArray(result)) return [];
+    return result.map((r: Record<string, unknown>) => this._parseTaskStatus(r));
+  }
+
+  async estimateInferenceFee(
+    modelId: string,
+    taskType: string,
+    inputSize?: number,
+  ): Promise<InferenceFeeEstimate> {
+    const params: Record<string, unknown> = { modelId, taskType };
+    if (inputSize !== undefined) params.inputSize = inputSize;
+    const result = await this.send('qfc_estimateInferenceFee', [params]);
+    return {
+      baseFee: String(result.baseFee || '0x0'),
+      model: String(result.model || modelId),
+      gpuTier: String(result.gpuTier || ''),
+      estimatedTimeMs: Number(result.estimatedTimeMs || 0),
+    };
   }
 
   async getPublicTaskStatus(taskId: string): Promise<PublicTaskResult> {
